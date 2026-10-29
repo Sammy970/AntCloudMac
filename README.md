@@ -10,8 +10,13 @@
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange?logo=swift)
 ![UI](https://img.shields.io/badge/UI-SwiftUI-blue)
 ![Streaming](https://img.shields.io/badge/streaming-Moonlight-5A0FC8)
+![Unofficial](https://img.shields.io/badge/unofficial-not%20affiliated%20with%20AntCloud-red)
 
 </div>
+
+> [!IMPORTANT]
+> **Unofficial project.** This is an independent client built by a user. It is not made, endorsed or supported by AntCloud.
+> "AntCloud" and the AntCloud logo belong to their owners. Use it with your own AntCloud account, and follow AntCloud's terms of service.
 
 ---
 
