@@ -48,21 +48,33 @@ then **Launch Stream**, and it pairs and opens the stream for you.
 <table>
   <tr>
     <td width="50%" align="center">
-{pic("login", "Sign-in screen with a blue aurora background and a glass sign-in card")}
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-login.png">
+  <img src=".github/screenshots/light-login.png" width="100%" alt="Sign-in screen with a blue aurora background and a glass sign-in card">
+</picture>
       <br><sub><b>Sign in</b>, by email or phone code</sub>
     </td>
     <td width="50%" align="center">
-{pic("queued", "Cloud PC screen showing the PC waiting in the queue at position 3")}
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-queued.png">
+  <img src=".github/screenshots/light-queued.png" width="100%" alt="Cloud PC screen showing the PC waiting in the queue at position 3">
+</picture>
       <br><sub><b>In the queue</b>, with your live position</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-{pic("streaming", "Cloud PC screen while streaming, with a LIVE indicator and every step complete")}
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-streaming.png">
+  <img src=".github/screenshots/light-streaming.png" width="100%" alt="Cloud PC screen while streaming, with a LIVE indicator and every step complete">
+</picture>
       <br><sub><b>Streaming</b> in Moonlight</sub>
     </td>
     <td width="50%" align="center">
-{pic("settings", "Stream settings grouped into Display, Performance, and Codec and Audio")}
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-settings.png">
+  <img src=".github/screenshots/light-settings.png" width="100%" alt="Stream settings grouped into Display, Performance, and Codec and Audio">
+</picture>
       <br><sub><b>Stream settings</b>, locked while you play</sub>
     </td>
   </tr>
