@@ -1,143 +1,193 @@
 import SwiftUI
 
+/// Signed-in window: a sidebar with the Cloud PC and Stream panes and the account footer.
 struct HomeView: View {
+    enum Pane: Hashable { case cloudPC, stream }
+
     @EnvironmentObject private var auth: AuthStore
     @Environment(\.openURL) private var openURL
     @StateObject private var session: SessionService
     @State private var settings = StreamSettings.load()
+    @State private var pane: Pane? = .cloudPC
 
     init(api: APIClient) {
         _session = StateObject(wrappedValue: SessionService(api: api, driver: MoonlightDriver()))
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            header
-            Divider()
-            settingsForm
-            Spacer(minLength: 0)
-            statusCard
+        split
+            .onChange(of: settings) { $0.save() }
+        .onAppear {
+            session.onSessionExpired = { auth.logout() }
+            previewIfRequested()
         }
-        .padding(28)
-        .onChange(of: settings) { $0.save() }
-        .onAppear { session.onSessionExpired = { auth.logout() } }
         .alert(item: $session.notice) { notice in
             Alert(title: Text(notice.title), message: Text(notice.message))
         }
     }
 
-    // MARK: Header
+    @ViewBuilder
+    private var split: some View {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["ANTCLOUD_SNAPSHOT"] != nil {
+            // Window snapshots can't draw the glass sidebar, so lay the same views out flat.
+            HStack(spacing: 0) {
+                sidebar.frame(width: 220)
+                Divider()
+                detail
+            }
+        } else {
+            splitView
+        }
+        #else
+        splitView
+        #endif
+    }
 
-    private var header: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Hi, \(auth.profile?.firstName ?? "there")").font(.title2.bold())
-                if let profile = auth.profile {
-                    HStack(spacing: 12) {
-                        Label(profile.currentPlan, systemImage: "creditcard")
-                        if let minutes = profile.minutesLeft {
-                            Label("\(minutes / 60)h \(minutes % 60)m left", systemImage: "clock")
-                        }
-                        if let days = profile.daysLeft {
-                            Label("Renews in \(days)d", systemImage: "calendar")
-                        }
+    private var splitView: some View {
+        NavigationSplitView {
+            sidebar
+                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 260)
+        } detail: {
+            detail
+        }
+    }
+
+    @ViewBuilder
+    private var detail: some View {
+        switch pane ?? .cloudPC {
+        case .cloudPC:
+            CloudPCPane(session: session, settings: settings) { pane = .stream }
+        case .stream:
+            StreamPane(settings: $settings, locked: session.phase == .pairing || session.phase == .streaming)
+        }
+    }
+
+    // MARK: Sidebar
+
+    private var sidebar: some View {
+        List(selection: $pane) {
+            NavigationLink(value: Pane.cloudPC) {
+                HStack {
+                    Label("Cloud PC", systemImage: "desktopcomputer")
+                    Spacer()
+                    if let color = session.phase.indicatorColor {
+                        Circle().fill(color).frame(width: 7, height: 7)
+                            .help(session.phase.statusText)
                     }
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
                 }
             }
-            Spacer()
-            Menu {
-                Button("Refresh account") { Task { await auth.reloadProfile() } }
-                Button("Plans & pricing") { openURL(Config.pricingURL) }
-                Divider()
-                Button("Log out") {
+            NavigationLink(value: Pane.stream) {
+                Label("Stream", systemImage: "slider.horizontal.3")
+            }
+        }
+        .listStyle(.sidebar)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if let profile = auth.profile {
+                AccountFooter(profile: profile) {
+                    Task { await auth.reloadProfile() }
+                } plans: {
+                    openURL(Config.pricingURL)
+                } logOut: {
                     session.shutDown()
                     auth.logout()
                 }
-            } label: {
-                Image(systemName: "person.crop.circle").font(.title2)
             }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
         }
     }
 
-    // MARK: Settings
-
-    private var settingsForm: some View {
-        Form {
-            Picker("Resolution", selection: $settings.resolution) {
-                Text("720p").tag("720")
-                Text("1080p").tag("1080")
-                Text("1440p").tag("1440")
-                Text("4K").tag("2160")
-            }
-            Picker("Aspect ratio", selection: $settings.aspect) {
-                ForEach(AspectRatio.allCases) { Text($0.rawValue).tag($0) }
-            }
-            Picker("Frame rate", selection: $settings.fps) {
-                Text("30 FPS").tag("30")
-                Text("60 FPS").tag("60")
-                Text("120 FPS").tag("120")
-            }
-            Picker("Bitrate", selection: $settings.bitrate) {
-                ForEach(["5000", "10000", "20000", "30000", "40000", "50000"], id: \.self) {
-                    Text("\(Int($0)! / 1000) Mbps").tag($0)
-                }
-            }
-            Toggle("Fullscreen (capture system keys)", isOn: $settings.fullscreen)
-            Toggle("HEVC (H.265)", isOn: $settings.hevc)
-            Toggle("Forward microphone", isOn: $settings.microphone)
-        }
-        .disabled(session.phase == .pairing || session.phase == .streaming)
+    /// Debug builds only: `ANTCLOUD_PREVIEW=home:<phase>` shows a phase for screenshots.
+    private func previewIfRequested() {
+        #if DEBUG
+        guard let value = ProcessInfo.processInfo.environment["ANTCLOUD_PREVIEW"],
+              value.hasPrefix("home:") else { return }
+        let phases: [String: SessionService.Phase] = [
+            "idle": .idle, "connecting": .connecting, "queued": .queued(position: 3), "booting": .booting,
+            "ready": .ready, "pairing": .pairing, "streaming": .streaming,
+        ]
+        let parts = value.dropFirst(5).split(separator: ":")
+        if let phase = parts.first.flatMap({ phases[String($0)] }) { session.previewPhase(phase) }
+        if parts.contains("stream") { pane = .stream }
+        #endif
     }
+}
 
-    // MARK: Status / actions
+extension SessionService.Phase {
+    /// Dot shown next to "Cloud PC" in the sidebar; nil when the PC is off.
+    var indicatorColor: Color? {
+        switch self {
+        case .idle: nil
+        case .ready, .streaming: .green
+        default: .orange
+        }
+    }
+}
 
-    private var statusCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                if session.phase.isBusy { ProgressView().controlSize(.small) }
-                Text(session.phase.statusText).font(.headline)
-            }
-            HStack {
-                switch session.phase {
-                case .idle:
-                    Button("Start Cloud PC") {
-                        guard let profile = auth.profile, profile.hasPaidPlan else {
-                            session.notice = .init(title: "Plan Required", message: "Please buy a plan to continue.")
-                            openURL(Config.pricingURL)
-                            return
-                        }
-                        session.start(settings: settings, nightPlan: profile.isNightPlan)
+// MARK: - Account footer
+
+private struct AccountFooter: View {
+    let profile: UserProfile
+    let refresh: () -> Void
+    let plans: () -> Void
+    let logOut: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let left = profile.minutesLeft {
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Time left").foregroundStyle(.secondary)
+                        Spacer()
+                        Text(Self.duration(left)).monospacedDigit()
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(MoonlightRunner.locate() == nil)
-                case .ready:
-                    Button("Launch Stream") { session.launchStream(settings: settings) }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                    Button("Apply Settings to VM") { session.applySettings(settings) }
-                    shutDownButton
-                default:
-                    shutDownButton
+                    .font(.caption)
+                    ProgressView(value: Double(left), total: Double(max(profile.totalTimeMonth, 1)))
+                        .progressViewStyle(.linear)
+                        .controlSize(.small)
+                    if let days = profile.daysLeft {
+                        Text(days <= 0 ? "Renews today" : "Renews in \(days) day\(days == 1 ? "" : "s")")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
-            if MoonlightRunner.locate() == nil {
-                Text("Moonlight is required for streaming. Install it with `brew install --cask moonlight`.")
-                    .font(.callout)
-                    .foregroundStyle(.orange)
+
+            HStack(spacing: 9) {
+                Text(profile.firstName.prefix(1).uppercased())
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 26, height: 26)
+                    .background(Color.antBlue.gradient, in: Circle())
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(profile.firstName).font(.callout.weight(.medium))
+                    Label(profile.planName, systemImage: profile.isNightPlan ? "moon.stars.fill" : "star.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .labelStyle(.titleAndIcon)
+                }
+                Spacer(minLength: 0)
+                Menu {
+                    Text(profile.email)
+                    Divider()
+                    Button("Refresh Account", action: refresh)
+                    Button("Plans & Pricing…", action: plans)
+                    Divider()
+                    Button("Log Out", action: logOut)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .help("Account")
             }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .overlay(alignment: .top) { Divider() }
     }
 
-    private var shutDownButton: some View {
-        Button("Shut Down", role: .destructive) { session.shutDown() }
-            .controlSize(.large)
+    static func duration(_ minutes: Int) -> String {
+        minutes >= 60 ? "\(minutes / 60)h \(minutes % 60)m" : "\(minutes)m"
     }
 }

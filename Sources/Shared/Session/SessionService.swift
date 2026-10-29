@@ -73,6 +73,11 @@ final class SessionService: ObservableObject {
 
     var isActive: Bool { phase != .idle }
 
+    #if DEBUG
+    /// Screenshot mode: forces a phase without opening a session.
+    func previewPhase(_ phase: Phase) { self.phase = phase }
+    #endif
+
     // MARK: Session lifecycle
 
     func start(settings: StreamSettings, nightPlan: Bool) {
