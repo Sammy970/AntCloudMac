@@ -1,36 +1,69 @@
+<div align="center">
+
+<img src=".github/icon.png" width="120" alt="AntCloud">
+
 # AntCloud for macOS
 
-Native SwiftUI launcher for AntCloud cloud PCs. It reimplements the Windows launcher's protocol
-(see `../re/FINDINGS.md`) and uses upstream [Moonlight](https://moonlight-stream.org) for the stream.
+**Native cloud-gaming client for [AntCloud](https://antcloud.co) — boot your cloud PC and stream it, all from one Mac app.**
 
-## Requirements
+![Platform](https://img.shields.io/badge/platform-macOS%2013%2B-black?logo=apple)
+![Swift](https://img.shields.io/badge/Swift-5.9-orange?logo=swift)
+![UI](https://img.shields.io/badge/UI-SwiftUI-blue)
+![Streaming](https://img.shields.io/badge/streaming-Moonlight-5A0FC8)
 
-- macOS 13+, Swift 5.9+ (Command Line Tools are enough, Xcode is not required)
-- Moonlight: `brew install --cask moonlight`
+</div>
 
-## Build & run
+---
+
+A SwiftUI launcher that handles the whole AntCloud session — login, VM allocation, pairing —
+and streams through [Moonlight](https://moonlight-stream.org). You log in, click **Start Cloud PC**,
+then **Launch Stream**, and it pairs and opens the stream for you.
+
+## ✨ Features
+
+- 🔐 **Login** with email/password or phone OTP — tokens stored in the macOS Keychain
+- ☁️ **One-click cloud PC** — handles the queue, VM boot, and readiness automatically
+- 🎮 **Auto-pairing** — generates the PIN and submits it to AntCloud's backend, no manual steps
+- ⚙️ **Stream settings** — resolution, aspect ratio, frame rate, bitrate, HEVC, fullscreen
+- 🎙️ **Microphone forwarding** to your cloud PC
+- 🌙 **Night-plan aware** — ends sessions at the plan's cutoff, like the official client
+
+## 🚀 Getting started
+
+**Requirements:** macOS 13+, Swift 5.9+ (Command Line Tools are enough), and
+[Moonlight](https://moonlight-stream.org) (`brew install --cask moonlight`).
 
 ```sh
-swift run                         # dev
-scripts/build-app.sh              # → build/AntCloud.app (needed for the microphone permission prompt)
-scripts/build-app.sh --bundle-moonlight   # also embeds /Applications/Moonlight.app
+swift run                 # run in development
+scripts/build-app.sh      # build AntCloud.app (needed for the microphone permission prompt)
 ```
 
-## Flow
+`scripts/build-app.sh --bundle-moonlight` also embeds `/Applications/Moonlight.app` into the bundle.
 
-1. Log in (email/password or phone OTP). The refresh token is stored in the Keychain.
-2. **Start Cloud PC** opens the Socket.IO session → queue → VM boot → `/vm/checkconnectionstatus` → `control "video"`.
-3. **Launch Stream** gets `/vm/getVmIp`, sends `setstream`, runs `Moonlight pair <ip> --pin N` while posting
-   the PIN to `/vm/vmauth`, then runs `Moonlight stream <ip> Desktop …`.
-4. **Shut Down** sends `closestream` and disconnects.
+## 🔄 How it works
 
-## Layout
+```
+Login ──▶ Start Cloud PC ──▶ queue / boot ──▶ ready
+                                                │
+                                      Launch Stream
+                                                │
+                     get VM IP ──▶ pair (auto-PIN) ──▶ Moonlight stream
+```
+
+1. Opens a Socket.IO session that queues and boots your VM
+2. Polls until the VM is reachable, then tells the server to start video
+3. On **Launch Stream**: fetches the VM IP, applies display settings, pairs, and runs Moonlight
+
+## 📁 Layout
 
 | Path | Purpose |
 |---|---|
-| `API/APIClient.swift` | REST client for `api.antcloud.co` (JWT auth, retries once after refreshing on 401) |
-| `Auth/` | Login state and Keychain storage |
-| `Session/SessionService.swift` | Socket.IO session, VM readiness, pairing, server notices, night-plan cutoff |
-| `Session/StreamSettings.swift` | Settings, server `stream` spec, Moonlight arguments |
-| `Stream/MoonlightRunner.swift` | Finds and runs the Moonlight CLI |
-| `Stream/MicForwarder.swift` | Microphone → raw PCM over UDP to `vmip:9002` |
+| `Sources/Shared/` | API client, auth/Keychain, Socket.IO session, stream settings |
+| `Sources/Mac/` | macOS app, views, Moonlight runner, mic forwarder |
+| `scripts/build-app.sh` | Builds and signs `AntCloud.app` |
+
+> `Sources/Shared/` is shared with the iOS app ([AntCloudMoonlight](https://github.com/Sammy970/AntCloudMoonlight)).
+
+## ⚠️ Note
+
+Unofficial client, not affiliated with AntCloud. Uses the official [Moonlight](https://github.com/moonlight-stream/moonlight-qt) (GPLv3) for streaming.
