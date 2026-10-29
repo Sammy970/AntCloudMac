@@ -15,7 +15,7 @@ Start the cloud PC, watch it boot, and play. Pairing with Moonlight happens on i
   <img src="https://img.shields.io/badge/unofficial-not%20affiliated%20with%20AntCloud-B42318?style=flat-square" alt="Unofficial">
 </p>
 
-<p><a href="#the-whole-session-in-one-window">Screenshots</a> &nbsp;·&nbsp; <a href="#getting-started">Getting started</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#project-layout">Project layout</a></p>
+<p><a href="#the-whole-session-in-one-window">Screenshots</a> &nbsp;·&nbsp; <a href="#getting-started">Getting started</a> &nbsp;·&nbsp; <a href="#an-overlay-while-you-play">Overlay</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#project-layout">Project layout</a></p>
 
 </div>
 
@@ -82,6 +82,48 @@ A drawn monitor shows the answer, the track below it shows how far along you are
     </td>
     <td width="58%" valign="top">
       <picture><source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-settings.png"><img src=".github/screenshots/light-settings.png" width="100%" alt="Stream settings grouped into Display, Performance, and Codec and Audio"></picture>
+    </td>
+  </tr>
+</table>
+
+## Check your connection before you start
+
+<table>
+  <tr>
+    <td width="58%" valign="top">
+      <picture><source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-network.png"><img src=".github/screenshots/light-network.png" width="100%" alt="Network check: latency bars, an Excellent to High scale with the marker on Good, jitter, packet loss, download speed and a bitrate suggestion"></picture>
+    </td>
+    <td width="42%" valign="top">
+      <p>The <b>Network</b> pane tells you how a stream would feel without starting the cloud PC.</p>
+      <ul>
+        <li><b>Latency</b> to AntCloud's servers, which share a network with the cloud PCs, so it's a close stand-in for the real thing. Twenty samples fill in live and a marker settles on Excellent, Good, Playable or High.</li>
+        <li><b>Jitter, packet loss and download speed</b>, the last measured through Cloudflare.</li>
+        <li><b>A plain verdict</b> and the bitrate your resolution and frame rate actually need, with one click to use it.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+## An overlay while you play
+
+<p align="center">
+  <img src=".github/screenshots/overlay-stream.png" width="100%" alt="A fullscreen cloud PC stream with the AntCloud overlay card in the top-right corner">
+</p>
+
+<table>
+  <tr>
+    <td width="40%" valign="top">
+      <img src=".github/screenshots/overlay-card.png" width="100%" alt="The overlay card: live latency, time left, this session, night-plan end and Moonlight's keyboard shortcuts">
+    </td>
+    <td width="60%" valign="top">
+      <p>Press <kbd>⌃</kbd><kbd>⌥</kbd><kbd>A</kbd> during a stream, in a window or fullscreen, for a small glass card over the game:</p>
+      <ul>
+        <li><b>Time left</b> on your plan, counting down, and how long this session has run</li>
+        <li><b>When a night plan ends</b> and your <b>live latency</b> to the cloud PC</li>
+        <li><b>Moonlight's own shortcuts</b>, so you don't have to remember them: release the mouse, switch mouse mode, fullscreen, stats, paste, minimize, quit</li>
+      </ul>
+      <p>It never takes the keyboard or mouse from the game. It also speaks up on its own when the cloud PC's connection gets busy (a game download on it doubled latency in testing) and when 10 minutes of plan time are left.</p>
+      <p><sub>Fullscreen needs Accessibility permission for AntCloud: Stream → Overlay → Allow…</sub></p>
     </td>
   </tr>
 </table>
