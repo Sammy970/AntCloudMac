@@ -110,6 +110,8 @@ The app follows your Mac's appearance. AntCloud blue is the only accent colour.
 - **Microphone forwarding** to the cloud PC.
 - **Night-plan aware.** Checks the server clock before starting, so outside 12:30–9:30 AM IST it tells you
   instead of booting the PC, and ends the session at the plan's cutoff like the official client.
+- **Network check** without starting the cloud PC: latency to AntCloud's servers (which share a network with the
+  cloud PCs), jitter, packet loss and download speed, with a verdict and a bitrate suggestion for your settings.
 - **Liquid Glass on macOS 26,** with a frosted fallback on earlier versions.
 - **Motion with a purpose:** the monitor powers on, the track fills step by step, time left counts up,
   and a failed sign-in shakes. Reduce Motion turns it all into simple fades.

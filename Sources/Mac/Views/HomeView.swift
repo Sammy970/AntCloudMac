@@ -1,14 +1,16 @@
 import SwiftUI
 
-/// Signed-in window: a sidebar with the Cloud PC and Stream panes and the account footer.
+/// Signed-in window: a sidebar with the Cloud PC, Stream and Network panes and the account footer.
 struct HomeView: View {
-    enum Pane: Hashable { case cloudPC, stream }
+    enum Pane: Hashable { case cloudPC, stream, network }
 
     @EnvironmentObject private var auth: AuthStore
     @Environment(\.openURL) private var openURL
     @StateObject private var session: SessionService
     @State private var settings = StreamSettings.load()
     @State private var pane: Pane? = .cloudPC
+    /// Kept here so results survive switching panes.
+    @StateObject private var networkCheck = NetworkCheck()
 
     init(api: APIClient) {
         _session = StateObject(wrappedValue: SessionService(api: api, driver: MoonlightDriver()))
@@ -60,6 +62,8 @@ struct HomeView: View {
             CloudPCPane(session: session, settings: settings) { pane = .stream }
         case .stream:
             StreamPane(settings: $settings, locked: session.phase == .pairing || session.phase == .streaming)
+        case .network:
+            NetworkPane(check: networkCheck, settings: $settings, busy: session.phase == .pairing || session.phase == .streaming)
         }
     }
 
@@ -79,6 +83,9 @@ struct HomeView: View {
             }
             NavigationLink(value: Pane.stream) {
                 Label("Stream", systemImage: "slider.horizontal.3")
+            }
+            NavigationLink(value: Pane.network) {
+                Label("Network", systemImage: "gauge.with.dots.needle.67percent")
             }
         }
         .listStyle(.sidebar)
@@ -108,6 +115,7 @@ struct HomeView: View {
         let parts = value.dropFirst(5).split(separator: ":")
         if let phase = parts.first.flatMap({ phases[String($0)] }) { session.previewPhase(phase) }
         if parts.contains("stream") { pane = .stream }
+        if parts.contains("network") { pane = .network }
         #endif
     }
 }
