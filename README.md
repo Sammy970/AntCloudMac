@@ -112,6 +112,10 @@ The app follows your Mac's appearance. AntCloud blue is the only accent colour.
   instead of booting the PC, and ends the session at the plan's cutoff like the official client.
 - **Network check** without starting the cloud PC: latency to AntCloud's servers (which share a network with the
   cloud PCs), jitter, packet loss and download speed, with a verdict and a bitrate suggestion for your settings.
+- **In-stream overlay:** press **⌃⌥A** during a stream for a small card with time left, session length,
+  night-plan end, live latency and Moonlight's own shortcuts. It warns you on its own when the cloud PC's connection
+  gets busy (a game download, say) and when 10 minutes of plan time are left. Fullscreen needs Accessibility
+  permission for AntCloud (Stream → Overlay → Allow…); a window works without it.
 - **Liquid Glass on macOS 26,** with a frosted fallback on earlier versions.
 - **Motion with a purpose:** the monitor powers on, the track fills step by step, time left counts up,
   and a failed sign-in shakes. Reduce Motion turns it all into simple fades.

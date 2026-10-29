@@ -4,6 +4,7 @@ import SwiftUI
 struct StreamPane: View {
     @Binding var settings: StreamSettings
     let locked: Bool
+    @State private var shortcutAllowed = StreamOverlayPanel.fullscreenShortcutAllowed
 
     private static let bitrates = ["5000", "10000", "20000", "30000", "40000", "50000"]
 
@@ -55,6 +56,21 @@ struct StreamPane: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section {
+                LabeledContent {
+                    if shortcutAllowed {
+                        Label("On", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                    } else {
+                        Button("Allow…") { StreamOverlayPanel.requestFullscreenShortcut() }
+                    }
+                } label: {
+                    Text("\(StreamOverlayPanel.shortcut) in fullscreen")
+                    Text("Shows time left and Moonlight's shortcuts over the stream. Works in a window as it is; fullscreen needs Accessibility permission for AntCloud.")
+                }
+            } header: {
+                Text("Overlay")
+            }
+
             Section("Codec & Audio") {
                 Toggle(isOn: $settings.hevc) {
                     Text("HEVC (H.265)")
@@ -67,6 +83,11 @@ struct StreamPane: View {
             }
         }
         .formStyle(.grouped)
+        .onReceive(Timer.publish(every: 2, on: .main, in: .common).autoconnect()) { _ in
+            // Picks up the permission once it's granted in System Settings.
+            let allowed = StreamOverlayPanel.fullscreenShortcutAllowed
+            if allowed != shortcutAllowed { shortcutAllowed = allowed }
+        }
         .disabled(locked)
         .navigationTitle("Stream")
     }

@@ -36,5 +36,10 @@ if [[ "${1:-}" == "--bundle-moonlight" ]]; then
   cp -R /Applications/Moonlight.app "$APP/Contents/Resources/Moonlight.app"
 fi
 
-codesign --force --deep --sign - "$APP"
+# Sign with an Apple Development certificate when there is one: macOS ties permissions such as
+# Accessibility (needed for the overlay shortcut in fullscreen) to the signature, and an ad-hoc
+# signature changes on every build. Falls back to ad-hoc signing.
+IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null | awk -F'"' '/Apple Development/ {print $2; exit}')"
+codesign --force --deep --sign "${IDENTITY:--}" "$APP"
+echo "Signed with ${IDENTITY:-ad-hoc signature}"
 echo "Built $APP"

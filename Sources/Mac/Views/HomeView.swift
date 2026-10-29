@@ -19,6 +19,14 @@ struct HomeView: View {
     var body: some View {
         split
             .onChange(of: settings) { $0.save() }
+        .onChange(of: session.phase) { phase in
+            // The in-stream overlay (time left, health warnings, ⌃⌥A) lives exactly as long as the stream.
+            if phase == .streaming, let host = session.streamHost {
+                StreamOverlayPanel.shared.begin(host: host, profile: auth.profile)
+            } else if phase != .streaming {
+                StreamOverlayPanel.shared.end()
+            }
+        }
         .onAppear {
             session.onSessionExpired = { auth.logout() }
             previewIfRequested()
@@ -116,6 +124,10 @@ struct HomeView: View {
         if let phase = parts.first.flatMap({ phases[String($0)] }) { session.previewPhase(phase) }
         if parts.contains("stream") { pane = .stream }
         if parts.contains("network") { pane = .network }
+        // `home:streaming:overlay` also opens the in-stream overlay against AntCloud's server.
+        if parts.contains("overlay") {
+            StreamOverlayPanel.shared.begin(host: "socket.antcloud.co", profile: auth.profile)
+        }
         #endif
     }
 }
