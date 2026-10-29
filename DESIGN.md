@@ -11,3 +11,10 @@ World: **Native Mac pro.** Reads like a first-party Apple utility (System Settin
 - **Motion:** state changes crossfade with `.smooth` spring. The busy step pulses. Nothing moves when idle.
 - **Login (the one expressive screen):** a drifting aurora of brand blues (soft radial gradients, a faint dot grid) runs under a hidden title bar. The left side carries a large headline and three feature rows; the form sits on a `.regularMaterial` card. Sign In uses the brand-gradient glow pill. The aurora stops under Reduce Motion.
 - **Plan names:** always shown through `UserProfile.planName` ("premiumNyt" → "Premium Night", with a moon icon), never the raw code.
+- **Glass:** on macOS/iOS 26+ the sign-in card, the primary action and secondary buttons use Liquid Glass through
+  `glassSurface`, `primaryGlassButton` and `secondaryGlassButton` (PlatformStyles.swift); earlier systems get material.
+  Only the main action is tinted blue; secondary glass buttons stay neutral. Sign In keeps the gradient glow pill,
+  because a disabled glass button disappears on the glass card.
+- **Motion:** content reveals in a short stagger (`reveal(_:)`), the monitor flashes on at power-up and crossfades between
+  screen states, the track fills segment by segment, time left counts up once, a failed sign-in shakes. Everything
+  reduces to fades under Reduce Motion. iPhone adds haptics on ready, streaming, alerts and setting changes.

@@ -15,10 +15,27 @@ struct LoginView: View {
     @State private var busy = false
     @State private var error: String?
     @State private var info: String?
+    @State private var failures = 0
 
     var body: some View {
         ZStack {
             AuroraBackground()
+            #if os(iOS)
+            // Phone: the hero stacks above the card and the whole screen scrolls with the keyboard.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 28) {
+                    hero
+                    card
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 36)
+                .padding(.bottom, 24)
+                // Exactly the screen's width, so nothing can push the page sideways.
+                .containerRelativeFrame(.horizontal)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+            #else
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 56) {
                     hero.frame(maxWidth: 340, alignment: .leading)
@@ -27,6 +44,7 @@ struct LoginView: View {
                 card
             }
             .padding(40)
+            #endif
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .transparentTitleBar()
@@ -41,29 +59,38 @@ struct LoginView: View {
         #endif
     }
 
+    #if os(iOS)
+    private static let isPhone = true
+    #else
+    private static let isPhone = false
+    #endif
+
     // MARK: Hero
 
     private var hero: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: Self.isPhone ? 18 : 22) {
             AppIconImage()
                 .frame(width: 64, height: 64)
                 .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
                 .shadow(color: Color.antBlue.opacity(0.6), radius: 18, y: 6)
+                .reveal(0)
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("Your gaming PC,\nin the cloud.")
-                    .font(.system(size: 38, weight: .bold))
+                    .font(.system(size: Self.isPhone ? 34 : 38, weight: .bold))
                     .lineSpacing(-2)
-                Text("Start it, stream it, play. AntCloud on your Mac, one click at a time.")
+                Text(Self.isPhone ? "Start it, stream it, play. AntCloud on your iPhone, one tap at a time."
+                                  : "Start it, stream it, play. AntCloud on your Mac, one click at a time.")
                     .font(.title3)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .reveal(0.08)
 
             VStack(alignment: .leading, spacing: 10) {
-                feature("power", "One click to start your cloud PC")
-                feature("link", "Pairs with Moonlight on its own")
-                feature("sparkles.tv", "Up to 4K and 120 FPS")
+                feature("power", "One click to start your cloud PC").reveal(0.16)
+                feature("link", "Pairs with Moonlight on its own").reveal(0.22)
+                feature("sparkles.tv", "Up to 4K and 120 FPS").reveal(0.28)
             }
         }
     }
@@ -93,6 +120,7 @@ struct LoginView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            .fixedSize()
             .onChange(of: method) { _ in error = nil; info = nil }
 
             Group {
@@ -101,8 +129,7 @@ struct LoginView: View {
                 case .phone: phoneForm
                 }
             }
-            .textFieldStyle(.roundedBorder)
-            .controlSize(.large)
+            .loginFieldStyle()
             .disabled(busy)
 
             if let error {
@@ -126,14 +153,12 @@ struct LoginView: View {
             }
             .font(.callout)
         }
-        .padding(28)
-        .frame(width: 340)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(.white.opacity(0.18), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.25), radius: 30, y: 16)
+        .padding(Self.isPhone ? 22 : 28)
+        .frame(maxWidth: Self.isPhone ? .infinity : 340)
+        .glassSurface(cornerRadius: 28)
+        .shadow(color: .black.opacity(0.18), radius: 30, y: 16)
+        .modifier(Shake(animatableData: CGFloat(failures)))
+        .reveal(Self.isPhone ? 0.3 : 0.18)
     }
 
     private var emailForm: some View {
@@ -193,7 +218,7 @@ struct LoginView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .buttonStyle(GlowButtonStyle())
+        .signInButtonStyle()
         .keyboardShortcut(.defaultAction)
     }
 
@@ -210,13 +235,26 @@ struct LoginView: View {
         info = nil
         busy = true
         Task {
-            do { try await action() } catch { self.error = error.localizedDescription }
+            do {
+                try await action()
+            } catch {
+                withAnimation(.easeOut(duration: 0.2)) { self.error = error.localizedDescription }
+                withAnimation(.linear(duration: 0.45)) { failures += 1 }
+            }
             busy = false
         }
     }
 }
 
-// MARK: - Glow button
+// MARK: - Sign-in button
+
+private extension View {
+        /// The gradient glow pill: stays clearly blue when disabled (just dimmer), where a disabled
+    /// glass button turns grey and all but disappears on the glass card.
+    func signInButtonStyle() -> some View {
+        buttonStyle(GlowButtonStyle())
+    }
+}
 
 /// Brand-gradient pill with a soft blue glow, for the sign-in action.
 private struct GlowButtonStyle: ButtonStyle {
@@ -244,7 +282,10 @@ private struct GlowButtonStyle: ButtonStyle {
 // MARK: - Aurora background
 
 /// Slowly drifting blurred light in AntCloud blues. Still when Reduce Motion is on.
-private struct AuroraBackground: View {
+struct AuroraBackground: View {
+    /// 1 on the sign-in screen; lower behind working screens so content stays calm.
+    var intensity = 1.0
+
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -273,7 +314,7 @@ private struct AuroraBackground: View {
                         let b = blobs[i]
                         Circle()
                             .fill(RadialGradient(
-                                colors: [b.color.opacity(scheme == .dark ? 0.6 : 0.4), b.color.opacity(0)],
+                                colors: [b.color.opacity((scheme == .dark ? 0.6 : 0.4) * intensity), b.color.opacity(0)],
                                 center: .center, startRadius: 0, endRadius: b.size / 2))
                             .frame(width: b.size, height: b.size)
                             .position(

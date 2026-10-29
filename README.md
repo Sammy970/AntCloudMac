@@ -108,7 +108,11 @@ The app follows your Mac's appearance. AntCloud blue is the only accent colour.
 - **Automatic pairing.** The app generates the PIN and sends it to AntCloud, so Moonlight pairs without any typing.
 - **Your plan in the sidebar.** Time left this month, the renewal date and a readable plan name, like "Premium Night".
 - **Microphone forwarding** to the cloud PC.
-- **Night-plan aware.** Ends the session at the plan's cutoff, like the official client.
+- **Night-plan aware.** Checks the server clock before starting, so outside 12:30–9:30 AM IST it tells you
+  instead of booting the PC, and ends the session at the plan's cutoff like the official client.
+- **Liquid Glass on macOS 26,** with a frosted fallback on earlier versions.
+- **Motion with a purpose:** the monitor powers on, the track fills step by step, time left counts up,
+  and a failed sign-in shakes. Reduce Motion turns it all into simple fades.
 
 ## Getting started
 

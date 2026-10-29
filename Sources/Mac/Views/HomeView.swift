@@ -112,17 +112,6 @@ struct HomeView: View {
     }
 }
 
-extension SessionService.Phase {
-    /// Dot shown next to "Cloud PC" in the sidebar; nil when the PC is off.
-    var indicatorColor: Color? {
-        switch self {
-        case .idle: nil
-        case .ready, .streaming: .green
-        default: .orange
-        }
-    }
-}
-
 // MARK: - Account footer
 
 private struct AccountFooter: View {
@@ -133,38 +122,10 @@ private struct AccountFooter: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if let left = profile.minutesLeft {
-                VStack(alignment: .leading, spacing: 5) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("Time left").foregroundStyle(.secondary)
-                        Spacer()
-                        Text(Self.duration(left)).monospacedDigit()
-                    }
-                    .font(.caption)
-                    ProgressView(value: Double(left), total: Double(max(profile.totalTimeMonth, 1)))
-                        .progressViewStyle(.linear)
-                        .controlSize(.small)
-                    if let days = profile.daysLeft {
-                        Text(days <= 0 ? "Renews today" : "Renews in \(days) day\(days == 1 ? "" : "s")")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            PlanUsage(profile: profile, compact: true)
 
             HStack(spacing: 9) {
-                Text(profile.firstName.prefix(1).uppercased())
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 26, height: 26)
-                    .background(Color.antBlue.gradient, in: Circle())
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(profile.firstName).font(.callout.weight(.medium))
-                    Label(profile.planName, systemImage: profile.isNightPlan ? "moon.stars.fill" : "star.fill")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .labelStyle(.titleAndIcon)
-                }
+                ProfileBadge(profile: profile)
                 Spacer(minLength: 0)
                 Menu {
                     Text(profile.email)
@@ -185,9 +146,5 @@ private struct AccountFooter: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .overlay(alignment: .top) { Divider() }
-    }
-
-    static func duration(_ minutes: Int) -> String {
-        minutes >= 60 ? "\(minutes / 60)h \(minutes % 60)m" : "\(minutes)m"
     }
 }
