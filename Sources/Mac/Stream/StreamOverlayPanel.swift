@@ -180,7 +180,8 @@ private struct StreamOverlayRoot: View {
                 StreamOverlayCard(model: model, health: health, hint: StreamOverlayPanel.fullscreenShortcutAllowed
                                     ? nil : "In fullscreen, ⌃⌥A needs Accessibility: AntCloud → Stream → Overlay.",
                                   shortcuts: StreamOverlayPanel.shortcuts)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    // Shrinks into its corner: sliding up would push it past the panel's edge and clip its header.
+                    .transition(.scale(scale: 0.9, anchor: .topTrailing).combined(with: .opacity))
             }
             if let toast = model.toast {
                 StreamToast(text: toast)
