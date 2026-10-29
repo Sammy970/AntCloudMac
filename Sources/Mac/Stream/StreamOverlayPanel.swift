@@ -57,6 +57,7 @@ final class StreamOverlayPanel {
     func toggle() {
         introTask?.cancel()
         model.cardVisible.toggle()
+        if model.cardVisible { panel?.orderFrontRegardless() }
     }
 
     // MARK: Panel
@@ -79,7 +80,8 @@ final class StreamOverlayPanel {
                             styleMask: [.borderless, .nonactivatingPanel],
                             backing: .buffered, defer: false)
         panel.isFloatingPanel = true
-        panel.level = .statusBar
+        // Moonlight's fullscreen window sits at the status-bar level (25), so the overlay must be higher.
+        panel.level = .screenSaver
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         panel.backgroundColor = .clear
         panel.isOpaque = false
