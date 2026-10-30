@@ -35,7 +35,9 @@ for route in "${ROUTES[@]}"; do
   args=(-s -o /tmp/antcloud-check-body -w '%{http_code}' -X "$method" "$API/$path" --max-time 20 -H 'Content-Type: application/json')
   [[ -n "$body" ]] && args+=(-d "$body")
   [[ -n "$header" ]] && args+=(-H "$header")
-  code=$(curl "${args[@]}" 2>/dev/null || echo 000)
+  # curl prints 000 itself when it can't connect, so no fallback (one used to make it 000000).
+  code=$(curl "${args[@]}" 2>/dev/null)
+  [[ "$code" =~ ^[0-9]{3}$ ]] || code=000
   if [[ "$code" == 404 ]] && grep -q "<pre>Cannot $method /api/" /tmp/antcloud-check-body; then
     rows+=("| \`$method $path\` | $what | ❌ gone (404) |")
     problems+=("\`$method $path\` ($what) no longer exists.")

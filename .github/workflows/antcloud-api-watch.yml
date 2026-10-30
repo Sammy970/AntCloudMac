@@ -4,9 +4,10 @@ name: AntCloud API watch
 # without warning. This checks once a day that each route the apps use still exists and that the
 # Windows client version hasn't moved on, and opens an issue (so you get an email) when it has.
 
+# GitHub's runners can't reach api.antcloud.co (every request fails to connect: AntCloud appears to
+# refuse non-Indian or datacenter traffic), so this isn't scheduled; the daily check runs on a Mac in
+# India instead. Run it here by hand if that ever changes.
 on:
-  schedule:
-    - cron: "30 3 * * *" # 09:00 IST
   workflow_dispatch:
 
 permissions:
