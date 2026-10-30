@@ -14,6 +14,10 @@ struct CloudPCPane: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
+                UpstreamBanner()
+                    .frame(maxWidth: 520)
+                    .padding(.bottom, 24)
+
                 DisplayHero(phase: session.phase)
                     .frame(width: 340)
                     .reveal(0)

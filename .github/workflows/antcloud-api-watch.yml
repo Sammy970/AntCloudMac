@@ -1,0 +1,54 @@
+name: AntCloud API watch
+
+# AntCloud renamed every API route with its Windows client 0.016 (2026-10-30), which broke sign-in
+# without warning. This checks once a day that each route the apps use still exists and that the
+# Windows client version hasn't moved on, and opens an issue (so you get an email) when it has.
+
+on:
+  schedule:
+    - cron: "30 3 * * *" # 09:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: antcloud-api-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check AntCloud's API
+        id: check
+        run: |
+          set +e
+          scripts/check-antcloud-api.sh > report.md
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open or update the issue
+        if: steps.check.outputs.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create antcloud-api --color D93F0B --description "AntCloud changed its API" --force
+          open=$(gh issue list --label antcloud-api --state open --json number --jq '.[0].number')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file report.md
+          else
+            gh issue create --title "AntCloud changed its API" --label antcloud-api --body-file report.md
+          fi
+
+      - name: Close the issue once everything answers again
+        if: steps.check.outputs.status == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in $(gh issue list --label antcloud-api --state open --json number --jq '.[].number' 2>/dev/null); do
+            gh issue close "$n" --comment "All routes answer and the Windows client version matches again."
+          done

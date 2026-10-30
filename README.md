@@ -13,6 +13,7 @@ Start the cloud PC, watch it boot, and play. Pairing with Moonlight happens on i
   <img src="https://img.shields.io/badge/SwiftUI-native-4A86E8?style=flat-square" alt="SwiftUI">
   <img src="https://img.shields.io/badge/streams%20with-Moonlight-5A0FC8?style=flat-square" alt="Streams with Moonlight">
   <img src="https://img.shields.io/badge/unofficial-not%20affiliated%20with%20AntCloud-B42318?style=flat-square" alt="Unofficial">
+  <a href="https://github.com/Sammy970/AntCloudMac/actions/workflows/antcloud-api-watch.yml"><img src="https://img.shields.io/github/actions/workflow/status/Sammy970/AntCloudMac/antcloud-api-watch.yml?style=flat-square&label=AntCloud%20API" alt="AntCloud API check"></a>
 </p>
 
 <p><a href="#the-whole-session-in-one-window">Screenshots</a> &nbsp;·&nbsp; <a href="#getting-started">Getting started</a> &nbsp;·&nbsp; <a href="#an-overlay-while-you-play">Overlay</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#project-layout">Project layout</a></p>
@@ -198,6 +199,20 @@ ANTCLOUD_PREVIEW=login ANTCLOUD_APPEARANCE=light ANTCLOUD_SNAPSHOT=login.png swi
 | `ANTCLOUD_SNAPSHOT` | Saves the window as a PNG after it settles, then quits |
 
 </details>
+
+## When AntCloud changes things
+
+AntCloud has no public API; these apps use the one its own Windows app uses, and that can change without notice.
+On 30 Oct 2026 their Windows app 0.016 renamed every route, and sign-in stopped working. Three things now catch that:
+
+- **A daily check** ([`antcloud-api-watch.yml`](.github/workflows/antcloud-api-watch.yml)) probes every route the apps use
+  with fake data and compares AntCloud's Windows app version with the one the code matches. When something changes it
+  opens an issue in this repo, so GitHub emails you, and closes it once everything answers again. Run it yourself with
+  `scripts/check-antcloud-api.sh`.
+- **In the app**, a banner appears when AntCloud ships a newer Windows app than the one this code matches.
+- **When a route disappears**, the app says AntCloud changed their service instead of showing a bare error.
+
+After updating `APIClient.swift` for a new AntCloud release, bump `UpstreamStatus.matchedClientVersion`.
 
 ## How it works
 
