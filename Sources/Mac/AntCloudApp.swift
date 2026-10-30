@@ -16,6 +16,12 @@ struct AntCloudApp: App {
                 }
         }
         .windowToolbarStyle(.unified)
+        .commands {
+            // The About pane (version, credits) replaces the standard About panel.
+            CommandGroup(replacing: .appInfo) {
+                Button("About AntCloud") { NotificationCenter.default.post(name: .showAbout, object: nil) }
+            }
+        }
     }
 
     /// Debug builds only: `ANTCLOUD_PREVIEW=login` or `home:<phase>` renders a state for screenshots
@@ -63,4 +69,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+}
+
+extension Notification.Name {
+    /// Opens the About pane (from the app menu).
+    static let showAbout = Notification.Name("AntCloudShowAbout")
 }

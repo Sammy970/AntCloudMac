@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Signed-in window: a sidebar with the Cloud PC, Stream and Network panes and the account footer.
 struct HomeView: View {
-    enum Pane: Hashable { case cloudPC, stream, network }
+    enum Pane: Hashable { case cloudPC, stream, network, about }
 
     @EnvironmentObject private var auth: AuthStore
     @Environment(\.openURL) private var openURL
@@ -27,6 +27,7 @@ struct HomeView: View {
                 StreamOverlayPanel.shared.end()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showAbout)) { _ in pane = .about }
         .onAppear {
             session.onSessionExpired = { auth.logout() }
             previewIfRequested()
@@ -70,6 +71,9 @@ struct HomeView: View {
             CloudPCPane(session: session, settings: settings) { pane = .stream }
         case .stream:
             StreamPane(settings: $settings, locked: session.phase == .pairing || session.phase == .streaming)
+        case .about:
+            ScrollView { AboutView() }
+                .navigationTitle("About")
         case .network:
             NetworkPane(check: networkCheck, settings: $settings, busy: session.phase == .pairing || session.phase == .streaming)
         }
@@ -94,6 +98,9 @@ struct HomeView: View {
             }
             NavigationLink(value: Pane.network) {
                 Label("Network", systemImage: "gauge.with.dots.needle.67percent")
+            }
+            NavigationLink(value: Pane.about) {
+                Label("About", systemImage: "info.circle")
             }
         }
         .listStyle(.sidebar)
@@ -124,6 +131,7 @@ struct HomeView: View {
         if let phase = parts.first.flatMap({ phases[String($0)] }) { session.previewPhase(phase) }
         if parts.contains("stream") { pane = .stream }
         if parts.contains("network") { pane = .network }
+        if parts.contains("about") { pane = .about }
         // `home:streaming:overlay` also opens the in-stream overlay against AntCloud's server.
         if parts.contains("overlay") {
             StreamOverlayPanel.shared.begin(host: "socket.antcloud.co", profile: auth.profile)

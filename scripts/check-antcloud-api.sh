@@ -9,7 +9,9 @@ set -uo pipefail
 
 cd "$(dirname "$0")/.."
 API=https://api.antcloud.co/api
-MATCHED=$(sed -nE 's/.*static let matchedClientVersion = ([0-9.]+).*/\1/p' Sources/Shared/API/UpstreamStatus.swift)
+# Config.appVersion 0.<AntCloud release>.<ours>: 0.16.x matches AntCloud's Windows client 0.016.
+APP_VERSION=$(sed -nE 's/.*static let appVersion = "([0-9.]+)".*/\1/p' Sources/Shared/Config.swift)
+MATCHED=$(echo "$APP_VERSION" | awk -F. '{ printf "%.3f", $2 / 1000 }')
 FAKE_AUTH="Authorization: JWT not-a-real-token"
 
 # method | path | JSON body | extra header | what the apps use it for

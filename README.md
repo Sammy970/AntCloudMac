@@ -8,6 +8,7 @@
 Start the cloud PC, watch it boot, and play. Pairing with Moonlight happens on its own.
 
 <p>
+  <img src="https://img.shields.io/badge/version-0.16.0-4A86E8?style=flat-square" alt="Version 0.16.0">
   <img src="https://img.shields.io/badge/macOS-13%2B-111111?style=flat-square&logo=apple&logoColor=white" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift 5.9">
   <img src="https://img.shields.io/badge/SwiftUI-native-4A86E8?style=flat-square" alt="SwiftUI">
@@ -15,7 +16,7 @@ Start the cloud PC, watch it boot, and play. Pairing with Moonlight happens on i
   <img src="https://img.shields.io/badge/unofficial-not%20affiliated%20with%20AntCloud-B42318?style=flat-square" alt="Unofficial">
 </p>
 
-<p><a href="#the-whole-session-in-one-window">Screenshots</a> &nbsp;·&nbsp; <a href="#getting-started">Getting started</a> &nbsp;·&nbsp; <a href="#an-overlay-while-you-play">Overlay</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#project-layout">Project layout</a></p>
+<p><a href="#the-whole-session-in-one-window">Screenshots</a> &nbsp;·&nbsp; <a href="#getting-started">Getting started</a> &nbsp;·&nbsp; <a href="#an-overlay-while-you-play">Overlay</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#project-layout">Project layout</a> &nbsp;·&nbsp; <a href="#made-by">Made by</a></p>
 
 </div>
 
@@ -237,6 +238,33 @@ Sign in ──▶ Start Cloud PC ──▶ queue ──▶ boot ──▶ ready
 | `scripts/build-app.sh` | Builds and signs `AntCloud.app` |
 
 `Sources/Shared/` is also used by the iPhone app, [AntCloudMoonlight](https://github.com/Sammy970/AntCloudMoonlight).
+
+## Made by
+
+<table>
+  <tr>
+    <td width="96" valign="middle"><a href="https://github.com/Sammy970"><img src="https://github.com/Sammy970.png?size=192" width="88" alt="Samyak Jain"></a></td>
+    <td valign="middle">
+      <b>Samyak Jain</b><br>
+      <sub>Designed and built AntCloud for Mac and iPhone, from reverse-engineering AntCloud's Windows app to the last animation.</sub><br><br>
+      <a href="https://github.com/Sammy970"><img src="https://img.shields.io/badge/GitHub-@Sammy970-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub @Sammy970"></a>
+      <a href="https://x.com/Sammy_970"><img src="https://img.shields.io/badge/X-@Sammy__970-000000?style=for-the-badge&logo=x&logoColor=white" alt="X @Sammy_970"></a>
+    </td>
+  </tr>
+</table>
+
+If this helped you play on a Mac or iPhone, a ⭐ on the repo or a hello on X is always welcome.
+
+<p align="center">
+  <picture><source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-about.png"><img src=".github/screenshots/light-about.png" width="80%" alt="The About screen: app version, the AntCloud release it matches, and the Made by card with GitHub and X links"></picture>
+  <br><sub>The same credits live in the app, under <b>About</b>.</sub>
+</p>
+
+## Versioning
+
+`0.<AntCloud release>.<ours>`: **0.16.x** works with AntCloud's Windows app **0.016**. The middle number moves when
+AntCloud changes its API and this app catches up (0.17.0 for their 0.017); the last one counts our own releases.
+It's set once, in `Config.appVersion`, for both apps.
 
 ## Notes
 
