@@ -27,8 +27,8 @@ jobs:
         id: check
         run: |
           set +e
-          scripts/check-antcloud-api.sh > report.md
-          echo "status=$?" >> "$GITHUB_OUTPUT"
+          scripts/check-antcloud-api.sh | tee report.md
+          echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
           cat report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Open or update the issue

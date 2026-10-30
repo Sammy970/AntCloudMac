@@ -29,6 +29,7 @@ ROUTES=(
 
 problems=()
 rows=()
+unanswered=0
 for route in "${ROUTES[@]}"; do
   IFS='|' read -r method path body header what <<<"$route"
   args=(-s -o /tmp/antcloud-check-body -w '%{http_code}' -X "$method" "$API/$path" --max-time 20 -H 'Content-Type: application/json')
@@ -40,11 +41,17 @@ for route in "${ROUTES[@]}"; do
     problems+=("\`$method $path\` ($what) no longer exists.")
   elif [[ "$code" == 000 ]]; then
     rows+=("| \`$method $path\` | $what | ⚠️ no answer |")
+    unanswered=$((unanswered + 1))
   else
     rows+=("| \`$method $path\` | $what | ✅ $code |")
   fi
 done
 rm -f /tmp/antcloud-check-body
+
+# Most routes silent means AntCloud is down or blocking this machine; either way the check proved nothing.
+if ((unanswered * 2 > ${#ROUTES[@]})); then
+  problems+=("$unanswered of ${#ROUTES[@]} routes didn't answer at all: AntCloud may be down, or blocking this machine.")
+fi
 
 latest=$(curl -s --max-time 20 "$API/windows/version" | sed -nE 's/.*"version":"?([0-9.]+).*/\1/p')
 if [[ -n "$latest" && -n "$MATCHED" ]] && awk -v a="$latest" -v b="$MATCHED" 'BEGIN { exit !(a > b + 0.0001) }'; then
