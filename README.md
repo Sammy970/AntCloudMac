@@ -105,6 +105,24 @@ A drawn monitor shows the answer, the track below it shows how far along you are
   </tr>
 </table>
 
+## Check your controller
+
+<table>
+  <tr>
+    <td width="42%" valign="top">
+      <p>The <b>Controllers</b> pane shows whether a controller will work before you start the cloud PC.</p>
+      <ul>
+        <li><b>A drawn controller that mirrors yours:</b> buttons light up as you press them, the sticks move with yours and the triggers fill as you pull them. Labels follow the controller: A B X Y, or ✕ ○ □ △ on PlayStation.</li>
+        <li><b>Ready to play, or not:</b> each controller is checked against the controllers Moonlight recognises on a Mac, including ones macOS itself doesn't, with what to try if it isn't recognised.</li>
+        <li><b>The details:</b> its ID, Bluetooth or USB, battery, exact stick and trigger values (handy for spotting stick drift), and a vibration test.</li>
+      </ul>
+    </td>
+    <td width="58%" valign="top">
+      <picture><source media="(prefers-color-scheme: dark)" srcset=".github/screenshots/dark-controllers.png"><img src=".github/screenshots/light-controllers.png" width="100%" alt="Controllers pane: a drawn Xbox controller with the A button and right bumper lit, the right trigger at 70%, the controller's ID and a Ready to play badge"></picture>
+    </td>
+  </tr>
+</table>
+
 ## An overlay while you play
 
 <p align="center">
@@ -155,6 +173,8 @@ The app follows your Mac's appearance. AntCloud blue is the only accent colour.
   instead of booting the PC, and ends the session at the plan's cutoff like the official client.
 - **Network check** without starting the cloud PC: latency to AntCloud's servers (which share a network with the
   cloud PCs), jitter, packet loss and download speed, with a verdict and a bitrate suggestion for your settings.
+- **Controller check:** a drawn controller that mirrors every press, stick and trigger, with its ID, battery,
+  a vibration test and whether Moonlight will recognise it.
 - **In-stream overlay:** press **⌃⌥A** during a stream for a small card with time left, session length,
   night-plan end, live latency and Moonlight's own shortcuts. It warns you on its own when the cloud PC's connection
   gets busy (a game download, say) and when 10 minutes of plan time are left. Fullscreen needs Accessibility
@@ -165,7 +185,7 @@ The app follows your Mac's appearance. AntCloud blue is the only accent colour.
 
 ## Download
 
-**[Download AntCloud for Mac 0.16.0](https://github.com/Sammy970/AntCloudMac/releases/latest)**: no building needed.
+**[Download AntCloud for Mac 0.16.1](https://github.com/Sammy970/AntCloudMac/releases/latest)**: no building needed.
 
 1. Install [Moonlight](https://moonlight-stream.org), which does the streaming: `brew install --cask moonlight`.
 2. Unzip, drag **AntCloud** to Applications and open it.
@@ -205,7 +225,7 @@ ANTCLOUD_PREVIEW=login ANTCLOUD_APPEARANCE=light ANTCLOUD_SNAPSHOT=login.png swi
 
 | Variable | Values |
 |---|---|
-| `ANTCLOUD_PREVIEW` | `login`, `home:idle`, `home:queued`, `home:booting`, `home:ready`, `home:pairing`, `home:streaming`. Add `:stream` for the settings pane. |
+| `ANTCLOUD_PREVIEW` | `login`, `home:idle`, `home:queued`, `home:booting`, `home:ready`, `home:pairing`, `home:streaming`. Add `:stream` for the settings pane, or `:controllers:sample` for the Controllers pane with a sample controller. |
 | `ANTCLOUD_APPEARANCE` | `light` forces light mode |
 | `ANTCLOUD_SNAPSHOT` | Saves the window as a PNG after it settles, then quits |
 
@@ -245,6 +265,8 @@ Sign in ──▶ Start Cloud PC ──▶ queue ──▶ boot ──▶ ready
 | `Sources/Shared/` | API client, sign-in and Keychain, Socket.IO session, stream settings |
 | `Sources/Mac/Views/` | Sidebar, Cloud PC screen, stream settings |
 | `Sources/Mac/Stream/` | Moonlight runner and microphone forwarding |
+| `Sources/Mac/Controllers/` | Controller monitor, the drawn gamepad, and the controllers Moonlight recognises |
+| `scripts/update-controller-db.sh` | Regenerates that list from SDL's built-in mappings and the community SDL_GameControllerDB |
 | `PRODUCT.md`, `DESIGN.md` | Who the app is for, and the design rules the UI follows |
 | `scripts/build-app.sh` | Builds and signs `AntCloud.app` |
 
