@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Signed-in window: a sidebar with the Cloud PC, Stream and Network panes and the account footer.
 struct HomeView: View {
-    enum Pane: Hashable { case cloudPC, stream, network, about }
+    enum Pane: Hashable { case cloudPC, stream, network, controllers, about }
 
     @EnvironmentObject private var auth: AuthStore
     @Environment(\.openURL) private var openURL
@@ -11,6 +11,7 @@ struct HomeView: View {
     @State private var pane: Pane? = .cloudPC
     /// Kept here so results survive switching panes.
     @StateObject private var networkCheck = NetworkCheck()
+    @StateObject private var controllerMonitor = ControllerMonitor()
 
     init(api: APIClient) {
         _session = StateObject(wrappedValue: SessionService(api: api, driver: MoonlightDriver()))
@@ -76,6 +77,8 @@ struct HomeView: View {
                 .navigationTitle("About")
         case .network:
             NetworkPane(check: networkCheck, settings: $settings, busy: session.phase == .pairing || session.phase == .streaming)
+        case .controllers:
+            ControllersPane(monitor: controllerMonitor)
         }
     }
 
@@ -98,6 +101,9 @@ struct HomeView: View {
             }
             NavigationLink(value: Pane.network) {
                 Label("Network", systemImage: "gauge.with.dots.needle.67percent")
+            }
+            NavigationLink(value: Pane.controllers) {
+                Label("Controllers", systemImage: "gamecontroller")
             }
             NavigationLink(value: Pane.about) {
                 Label("About", systemImage: "info.circle")
@@ -132,6 +138,9 @@ struct HomeView: View {
         if parts.contains("stream") { pane = .stream }
         if parts.contains("network") { pane = .network }
         if parts.contains("about") { pane = .about }
+        // `:controllers` opens the pane; add `:sample` for a sample controller mid-press, without hardware.
+        if parts.contains("controllers") { pane = .controllers }
+        if parts.contains("sample") { controllerMonitor.showPreview() }
         // `home:streaming:overlay` also opens the in-stream overlay against AntCloud's server.
         if parts.contains("overlay") {
             StreamOverlayPanel.shared.begin(host: "socket.antcloud.co", profile: auth.profile)
