@@ -5,7 +5,6 @@ struct StreamPane: View {
     @Binding var settings: StreamSettings
     let locked: Bool
     @State private var shortcutAllowed = StreamOverlayPanel.fullscreenShortcutAllowed
-    @State private var skipNightPlanChecks = SessionService.nightPlanMonitorDisabled
 
     private static let bitrates = ["5000", "10000", "20000", "30000", "40000", "50000"]
 
@@ -70,16 +69,6 @@ struct StreamPane: View {
                 }
             } header: {
                 Text("Overlay")
-            }
-
-            Section {
-                Toggle(isOn: $skipNightPlanChecks) {
-                    Text("Skip night-plan checks")
-                    Text("For testing. Skips the app's own hours check before starting and its 9:35 AM IST cutoff. AntCloud still enforces plan hours on its servers.")
-                }
-                .onChange(of: skipNightPlanChecks) { SessionService.nightPlanMonitorDisabled = $0 }
-            } header: {
-                Text("Developer")
             }
 
             Section("Codec & Audio") {
