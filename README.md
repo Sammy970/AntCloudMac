@@ -190,7 +190,7 @@ The app follows your Mac's appearance. AntCloud blue is the only accent colour.
 
 ## Download
 
-**[Download AntCloud for Mac 0.16.2](https://github.com/Sammy970/AntCloudMac/releases/latest)**: no building needed.
+**[Download AntCloud for Mac 0.16.3](https://github.com/Sammy970/AntCloudMac/releases/latest)**: no building needed.
 
 1. Install [Moonlight](https://moonlight-stream.org), which does the streaming: `brew install --cask moonlight`.
 2. Unzip, drag **AntCloud** to Applications and open it.
